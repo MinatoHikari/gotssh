@@ -1,0 +1,90 @@
+# Go 编译产物
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+gotssh-*
+
+# 构建目录
+build/
+dist/
+release/
+
+# Go 测试文件
+*.test
+*.out
+*.prof
+
+# Go 依赖管理
+vendor/
+go.work
+go.work.sum
+
+# 编辑器和IDE文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# 系统文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 日志文件
+*.log
+logs/
+
+# 临时文件
+*.tmp
+*.temp
+.tmp/
+tmp/
+
+# 配置文件（可能包含敏感信息）
+config.yaml
+config.json
+*.env
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# SSH 密钥
+*.pem
+*.key
+id_rsa
+id_rsa.pub
+known_hosts
+
+# 压缩文件
+*.zip
+*.tar
+*.tar.gz
+*.rar
+
+# 调试文件
+debug
+*.debug
+core
+
+# 性能分析文件
+*.prof
+cpu.prof
+mem.prof
+
+# 其他
+*.bak
+*.orig
+*.rej
+.git/
+.gitignore.bak 

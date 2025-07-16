@@ -1,0 +1,104 @@
+config_version: 1
+servers:
+  20240101120000-abcdef:
+    id: 20240101120000-abcdef
+    alias: myserver
+    host: 192.168.1.100
+    port: 22
+    user: root
+    auth_type: credential
+    credential_id: 20231201120000-abcdef
+    password: ""
+    key_path: ""
+    key_passphrase: ""
+    startup_script: ""
+    proxy: null
+    tags: []
+    description: "我的测试服务器"
+    created_at: 2024-01-01T12:00:00Z
+    updated_at: 2024-01-01T12:00:00Z
+    
+  20240101120001-ghijkl:
+    id: 20240101120001-ghijkl
+    alias: webserver
+    host: example.com
+    port: 22
+    user: ubuntu
+    auth_type: credential
+    credential_id: 20231201120001-ghijkl
+    password: ""
+    key_path: ""
+    key_passphrase: ""
+    startup_script: "cd /var/www/html"
+    proxy:
+      type: socks5
+      host: 127.0.0.1
+      port: 1080
+      username: ""
+      password: ""
+    tags: ["web", "production"]
+    description: "生产环境Web服务器"
+    created_at: 2024-01-01T12:00:01Z
+    updated_at: 2024-01-01T12:00:01Z
+
+credentials:
+  20231201120000-abcdef:
+    id: 20231201120000-abcdef
+    alias: dev-password
+    username: developer
+    type: password
+    password: encrypted_password_here
+    key_path: ""
+    key_content: ""
+    key_passphrase: ""
+    description: "开发环境密码凭证"
+    created_at: 2023-12-01T12:00:00Z
+    updated_at: 2023-12-01T12:00:00Z
+    
+  20231201120001-ghijkl:
+    id: 20231201120001-ghijkl
+    alias: prod-key
+    username: admin
+    type: key
+    password: ""
+    key_path: ~/.ssh/prod_key
+    key_content: ""
+    key_passphrase: "key_passphrase_here"
+    description: "生产环境SSH密钥凭证"
+    created_at: 2023-12-01T12:00:01Z
+    updated_at: 2023-12-01T12:00:01Z
+
+port_forwards:
+  20240101120002-mnopqr:
+    id: 20240101120002-mnopqr
+    alias: mysql-tunnel
+    server_id: 20240101120000-abcdef
+    type: local
+    local_host: 127.0.0.1
+    local_port: 3306
+    remote_host: 127.0.0.1
+    remote_port: 3306
+    description: "MySQL数据库端口转发"
+    created_at: 2024-01-01T12:00:02Z
+    updated_at: 2024-01-01T12:00:02Z
+    
+  20240101120003-stuvwx:
+    id: 20240101120003-stuvwx
+    alias: web-tunnel
+    server_id: 20240101120001-ghijkl
+    type: local
+    local_host: 127.0.0.1
+    local_port: 8080
+    remote_host: 127.0.0.1
+    remote_port: 80
+    description: "Web服务端口转发"
+    created_at: 2024-01-01T12:00:03Z
+    updated_at: 2024-01-01T12:00:03Z
+
+settings:
+  config_dir: ~/.config/gotssh
+  log_level: info
+  connect_timeout: 30
+  default_user: root
+  default_port: 22
+  default_auth_type: ask 
