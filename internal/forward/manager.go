@@ -15,7 +15,7 @@ import (
 
 // Manager 端口转发管理器
 type Manager struct {
-	configManager *config.Manager
+	configManager  *config.Manager
 	activeForwards map[string]*ActiveForward
 	// 新增超时配置
 	ConnectTimeout    time.Duration
@@ -32,17 +32,17 @@ type ActiveForward struct {
 	SSHClient *ssh.Client
 	Done      chan bool
 	// 新增控制通道
-	ctx       context.Context
-	cancel    context.CancelFunc
-	errChan   chan error
+	ctx        context.Context
+	cancel     context.CancelFunc
+	errChan    chan error
 	retryCount int
 }
 
 // NewManager 创建新的端口转发管理器
 func NewManager(configManager *config.Manager) *Manager {
 	return &Manager{
-		configManager:     configManager,
-		activeForwards:    make(map[string]*ActiveForward),
+		configManager:  configManager,
+		activeForwards: make(map[string]*ActiveForward),
 		// 默认超时配置
 		ConnectTimeout:    30 * time.Second,
 		ReadTimeout:       60 * time.Second,
@@ -70,21 +70,21 @@ func (m *Manager) StartPortForward(pfConfig *config.PortForwardConfig) error {
 
 	// 创建上下文和取消函数
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	// 创建活动转发记录
 	forward := &ActiveForward{
-		ID:        pfConfig.ID,
-		Config:    pfConfig,
-		Done:      make(chan bool),
-		ctx:       ctx,
-		cancel:    cancel,
-		errChan:   make(chan error, 1),
+		ID:         pfConfig.ID,
+		Config:     pfConfig,
+		Done:       make(chan bool),
+		ctx:        ctx,
+		cancel:     cancel,
+		errChan:    make(chan error, 1),
 		retryCount: 0,
 	}
 
 	// 启动端口转发协程
 	go m.runPortForwardWithRetry(forward)
-	
+
 	// 启动连接监控协程
 	go m.monitorConnection(forward)
 
@@ -121,13 +121,13 @@ func (m *Manager) runPortForwardWithRetry(forward *ActiveForward) {
 
 		// 创建SSH客户端
 		client := ssh.NewClient(serverConfig, m.configManager)
-		
+
 		// 设置连接超时
 		if err := m.connectWithTimeout(client, forward.ctx); err != nil {
 			forward.retryCount++
-			fmt.Printf("端口转发 %s 连接失败 (重试 %d/%d): %v\n", 
+			fmt.Printf("端口转发 %s 连接失败 (重试 %d/%d): %v\n",
 				forward.ID, forward.retryCount, m.MaxRetries, err)
-			
+
 			if forward.retryCount <= m.MaxRetries {
 				// 等待一段时间后重试
 				select {
@@ -137,7 +137,7 @@ func (m *Manager) runPortForwardWithRetry(forward *ActiveForward) {
 					continue
 				}
 			}
-			
+
 			forward.errChan <- fmt.Errorf("连接失败，已达到最大重试次数: %w", err)
 			return
 		}
@@ -160,18 +160,18 @@ func (m *Manager) runPortForwardWithRetry(forward *ActiveForward) {
 
 		if forwardErr != nil {
 			fmt.Printf("端口转发 %s 错误: %v\n", forward.ID, forwardErr)
-			
+
 			// 检查是否是网络错误，如果是则重试
 			if isNetworkError(forwardErr) && forward.retryCount < m.MaxRetries {
 				forward.retryCount++
 				fmt.Printf("网络错误，准备重试 %d/%d\n", forward.retryCount, m.MaxRetries)
-				
+
 				// 关闭当前连接
 				if forward.SSHClient != nil {
 					forward.SSHClient.Close()
 					forward.SSHClient = nil
 				}
-				
+
 				// 等待后重试
 				select {
 				case <-forward.ctx.Done():
@@ -193,7 +193,7 @@ func (m *Manager) runPortForwardWithRetry(forward *ActiveForward) {
 // connectWithTimeout 带超时的连接
 func (m *Manager) connectWithTimeout(client *ssh.Client, ctx context.Context) error {
 	connChan := make(chan error, 1)
-	
+
 	go func() {
 		connChan <- client.Connect()
 	}()
@@ -221,11 +221,11 @@ func (m *Manager) monitorConnection(forward *ActiveForward) {
 			if forward.SSHClient == nil {
 				continue
 			}
-			
+
 			// 检查连接状态
 			if !forward.SSHClient.IsConnected() {
 				fmt.Printf("端口转发 %s 连接已断开，触发重连\n", forward.ID)
-				
+
 				// 发送错误信号触发重连
 				select {
 				case forward.errChan <- fmt.Errorf("连接断开"):
@@ -243,7 +243,7 @@ func isNetworkError(err error) bool {
 	if err == nil {
 		return false
 	}
-	
+
 	errStr := err.Error()
 	networkErrors := []string{
 		"connection refused",
@@ -255,24 +255,24 @@ func isNetworkError(err error) bool {
 		"connection lost",
 		"EOF",
 	}
-	
+
 	for _, netErr := range networkErrors {
 		if strings.Contains(errStr, netErr) {
 			return true
 		}
 	}
-	
+
 	return false
 }
 
 // localPortForwardWithContext 本地端口转发（带Context）
 func (m *Manager) localPortForwardWithContext(client *ssh.Client, ctx context.Context, localAddr, remoteAddr string) error {
 	errChan := make(chan error, 1)
-	
+
 	go func() {
 		errChan <- client.LocalPortForwardWithTimeout(localAddr, remoteAddr, m.ReadTimeout)
 	}()
-	
+
 	select {
 	case err := <-errChan:
 		return err
@@ -284,11 +284,11 @@ func (m *Manager) localPortForwardWithContext(client *ssh.Client, ctx context.Co
 // remotePortForwardWithContext 远程端口转发（带Context）
 func (m *Manager) remotePortForwardWithContext(client *ssh.Client, ctx context.Context, remoteAddr, localAddr string) error {
 	errChan := make(chan error, 1)
-	
+
 	go func() {
 		errChan <- client.RemotePortForwardWithTimeout(remoteAddr, localAddr, m.ReadTimeout)
 	}()
-	
+
 	select {
 	case err := <-errChan:
 		return err
@@ -319,6 +319,7 @@ func (m *Manager) StopPortForward(pfID string) error {
 	case <-forward.Done:
 		// 转发已停止
 		fmt.Printf("端口转发 %s 已停止\n", pfID)
+		delete(m.activeForwards, pfID)
 	case <-time.After(5 * time.Second):
 		// 超时，强制清理
 		fmt.Printf("等待端口转发 %s 停止超时，强制清理\n", pfID)
@@ -340,7 +341,7 @@ func (m *Manager) StopAllPortForwards() error {
 
 // ListActiveForwards 列出所有活动的端口转发
 func (m *Manager) ListActiveForwards() []*ActiveForward {
-	var forwards []*ActiveForward
+	forwards := make([]*ActiveForward, 0)
 	for _, forward := range m.activeForwards {
 		forwards = append(forwards, forward)
 	}
@@ -439,7 +440,7 @@ func (m *Manager) TestPortForward(pfConfig *config.PortForwardConfig) error {
 		return fmt.Errorf("SSH连接不稳定")
 	}
 
-	fmt.Printf("端口转发配置测试成功: %s -> %s\n", 
+	fmt.Printf("端口转发配置测试成功: %s -> %s\n",
 		fmt.Sprintf("%s:%d", pfConfig.LocalHost, pfConfig.LocalPort),
 		fmt.Sprintf("%s:%d", pfConfig.RemoteHost, pfConfig.RemotePort))
 
@@ -459,4 +460,4 @@ func (m *Manager) CreateAndStartPortForward(pfConfig *config.PortForwardConfig) 
 	}
 
 	return nil
-} 
+}

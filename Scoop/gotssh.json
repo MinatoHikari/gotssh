@@ -1,0 +1,33 @@
+{
+    "version": "1.1.0",
+    "description": "功能强大的SSH连接和端口转发管理工具",
+    "homepage": "https://github.com/MinatoHikari/gotssh",
+    "license": "MIT",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/MinatoHikari/gotssh/releases/download/v1.1.0/gotssh-1.1.0-windows-amd64.zip",
+            "hash": "3556599aff4f9d649a19ebf50a4bfc76f05e8436e8cf58abde389a3f56325f19",
+            "extract_dir": ".",
+            "bin": "gotssh-windows-amd64.exe"
+        },
+        "arm64": {
+            "url": "https://github.com/MinatoHikari/gotssh/releases/download/v1.1.0/gotssh-1.1.0-windows-arm64.zip",
+            "hash": "a544169046efb9113ef608a8b198a2bf9990157559b21fa44ba57424358d2d76",
+            "extract_dir": ".",
+            "bin": "gotssh-windows-arm64.exe"
+        }
+    },
+    "checkver": {
+        "github": "https://github.com/MinatoHikari/gotssh"
+    },
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/MinatoHikari/gotssh/releases/download/v$version/gotssh-$version-windows-amd64.zip"
+            },
+            "arm64": {
+                "url": "https://github.com/MinatoHikari/gotssh/releases/download/v$version/gotssh-$version-windows-arm64.zip"
+            }
+        }
+    }
+}

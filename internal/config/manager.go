@@ -138,7 +138,7 @@ func (m *Manager) UpdateServer(serverID string, server *ServerConfig) error {
 
 	server.ID = serverID
 	server.UpdatedAt = time.Now()
-	
+
 	m.config.Servers[serverID] = server
 	return m.Save()
 }
@@ -187,28 +187,28 @@ func (m *Manager) GetServerByHost(host string) ([]*ServerConfig, error) {
 			servers = append(servers, server)
 		}
 	}
-	
+
 	if len(servers) == 0 {
 		return nil, fmt.Errorf("主机 '%s' 不存在", host)
 	}
-	
+
 	return servers, nil
 }
 
 // FindServer 查找服务器配置（支持IP、别名、模糊匹配）
 func (m *Manager) FindServer(query string) ([]*ServerConfig, error) {
 	var servers []*ServerConfig
-	
+
 	// 精确匹配别名
 	if server, err := m.GetServerByAlias(query); err == nil {
 		return []*ServerConfig{server}, nil
 	}
-	
+
 	// 精确匹配主机
 	if results, err := m.GetServerByHost(query); err == nil {
 		return results, nil
 	}
-	
+
 	// 模糊匹配
 	query = strings.ToLower(query)
 	for _, server := range m.config.Servers {
@@ -218,17 +218,17 @@ func (m *Manager) FindServer(query string) ([]*ServerConfig, error) {
 			servers = append(servers, server)
 		}
 	}
-	
+
 	if len(servers) == 0 {
 		return nil, fmt.Errorf("未找到匹配的服务器: %s", query)
 	}
-	
+
 	return servers, nil
 }
 
 // ListServers 列出所有服务器
 func (m *Manager) ListServers() []*ServerConfig {
-	var servers []*ServerConfig
+	servers := make([]*ServerConfig, 0)
 	for _, server := range m.config.Servers {
 		servers = append(servers, server)
 	}
@@ -280,7 +280,7 @@ func (m *Manager) UpdatePortForward(pfID string, pf *PortForwardConfig) error {
 
 	pf.ID = pfID
 	pf.UpdatedAt = time.Now()
-	
+
 	m.config.PortForwards[pfID] = pf
 	return m.Save()
 }
@@ -316,7 +316,7 @@ func (m *Manager) GetPortForwardByAlias(alias string) (*PortForwardConfig, error
 
 // ListPortForwards 列出所有端口转发
 func (m *Manager) ListPortForwards() []*PortForwardConfig {
-	var pfs []*PortForwardConfig
+	pfs := make([]*PortForwardConfig, 0)
 	for _, pf := range m.config.PortForwards {
 		pfs = append(pfs, pf)
 	}
@@ -374,7 +374,7 @@ func (m *Manager) UpdateCredential(credID string, cred *CredentialConfig) error 
 
 	cred.ID = credID
 	cred.UpdatedAt = time.Now()
-	
+
 	m.config.Credentials[credID] = cred
 	return m.Save()
 }
@@ -417,9 +417,9 @@ func (m *Manager) GetCredentialByAlias(alias string) (*CredentialConfig, error) 
 
 // ListCredentials 列出所有凭证
 func (m *Manager) ListCredentials() []*CredentialConfig {
-	var creds []*CredentialConfig
+	creds := make([]*CredentialConfig, 0)
 	for _, cred := range m.config.Credentials {
 		creds = append(creds, cred)
 	}
 	return creds
-} 
+}

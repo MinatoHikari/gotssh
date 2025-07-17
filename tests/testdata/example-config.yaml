@@ -1,0 +1,127 @@
+config_version: 1
+servers:
+  test-server-1:
+    id: test-server-1
+    alias: "test-server"
+    host: "test.example.com"
+    port: 22
+    user: "testuser"
+    auth_type: "password"
+    password: "testpass"
+    description: "Test server for unit tests"
+    tags:
+      - "test"
+      - "development"
+    created_at: 2024-01-01T00:00:00Z
+    updated_at: 2024-01-01T00:00:00Z
+  
+  test-server-2:
+    id: test-server-2
+    alias: "test-server-key"
+    host: "test2.example.com"
+    port: 2222
+    user: "keyuser"
+    auth_type: "key"
+    key_path: "/fake/path/to/key"
+    key_passphrase: "keypass"
+    description: "Test server with key authentication"
+    tags:
+      - "test"
+      - "key-auth"
+    created_at: 2024-01-01T00:00:00Z
+    updated_at: 2024-01-01T00:00:00Z
+  
+  test-server-3:
+    id: test-server-3
+    alias: "test-server-cred"
+    host: "test3.example.com"
+    port: 22
+    user: "creduser"
+    auth_type: "credential"
+    credential_id: "test-cred-1"
+    description: "Test server with credential authentication"
+    tags:
+      - "test"
+      - "credential-auth"
+    created_at: 2024-01-01T00:00:00Z
+    updated_at: 2024-01-01T00:00:00Z
+
+port_forwards:
+  test-forward-1:
+    id: test-forward-1
+    alias: "test-web-forward"
+    server_id: "test-server-1"
+    type: "local"
+    local_host: "127.0.0.1"
+    local_port: 8080
+    remote_host: "127.0.0.1"
+    remote_port: 80
+    description: "Test local port forward for web"
+    created_at: 2024-01-01T00:00:00Z
+    updated_at: 2024-01-01T00:00:00Z
+  
+  test-forward-2:
+    id: test-forward-2
+    alias: "test-db-forward"
+    server_id: "test-server-2"
+    type: "local"
+    local_host: "127.0.0.1"
+    local_port: 3306
+    remote_host: "192.168.1.100"
+    remote_port: 3306
+    description: "Test database port forward"
+    created_at: 2024-01-01T00:00:00Z
+    updated_at: 2024-01-01T00:00:00Z
+  
+  test-forward-3:
+    id: test-forward-3
+    alias: "test-remote-forward"
+    server_id: "test-server-3"
+    type: "remote"
+    local_host: "127.0.0.1"
+    local_port: 9090
+    remote_host: "0.0.0.0"
+    remote_port: 9090
+    description: "Test remote port forward"
+    created_at: 2024-01-01T00:00:00Z
+    updated_at: 2024-01-01T00:00:00Z
+
+credentials:
+  test-cred-1:
+    id: test-cred-1
+    alias: "test-password-cred"
+    username: "testuser"
+    type: "password"
+    password: "testpass"
+    description: "Test password credential"
+    created_at: 2024-01-01T00:00:00Z
+    updated_at: 2024-01-01T00:00:00Z
+  
+  test-cred-2:
+    id: test-cred-2
+    alias: "test-key-cred"
+    username: "keyuser"
+    type: "key"
+    key_path: "/fake/path/to/private/key"
+    key_passphrase: "keypass"
+    description: "Test SSH key credential"
+    created_at: 2024-01-01T00:00:00Z
+    updated_at: 2024-01-01T00:00:00Z
+  
+  test-cred-3:
+    id: test-cred-3
+    alias: "test-no-pass-key"
+    username: "nopassuser"
+    type: "key"
+    key_path: "/fake/path/to/nopass/key"
+    description: "Test SSH key without passphrase"
+    created_at: 2024-01-01T00:00:00Z
+    updated_at: 2024-01-01T00:00:00Z
+
+settings:
+  config_dir: "/tmp/gotssh-test"
+  log_level: "debug"
+  connect_timeout: 30
+  default_user: "testuser"
+  default_port: 22
+  default_auth_type: "ask" 

@@ -132,7 +132,7 @@ func (cm *CredentialMenu) AddCredential() error {
 
 	case "SSH密钥凭证":
 		cred.Type = config.CredentialTypeKey
-		
+
 		// 选择密钥输入方式
 		inputMethodPrompt := promptui.Select{
 			Label: "密钥输入方式",
@@ -181,7 +181,7 @@ func (cm *CredentialMenu) AddCredential() error {
 				}
 				keyContent.WriteString(line + "\n")
 			}
-			
+
 			if keyContent.Len() == 0 {
 				return fmt.Errorf("密钥内容不能为空")
 			}
@@ -221,6 +221,11 @@ func (cm *CredentialMenu) AddCredential() error {
 
 // ShowCredentialList 显示凭证列表
 func (cm *CredentialMenu) ShowCredentialList() {
+	if cm.configManager == nil {
+		fmt.Println("配置管理器未初始化")
+		return
+	}
+
 	credentials := cm.configManager.ListCredentials()
 	if len(credentials) == 0 {
 		fmt.Println("暂无凭证配置")
@@ -345,7 +350,7 @@ func (cm *CredentialMenu) EditCredential() error {
 
 	case "SSH密钥凭证":
 		cred.Type = config.CredentialTypeKey
-		
+
 		// 选择密钥输入方式
 		inputMethods := []string{"密钥文件路径", "直接输入密钥内容"}
 		var currentInputIndex int
@@ -388,7 +393,7 @@ func (cm *CredentialMenu) EditCredential() error {
 			if cred.KeyContent != "" {
 				fmt.Printf("当前密钥内容预览:\n%s...\n", cred.KeyContent[:min(100, len(cred.KeyContent))])
 			}
-			
+
 			keyContentPrompt := promptui.Prompt{
 				Label: "密钥内容 (多行输入，输入END结束)",
 			}
@@ -403,7 +408,7 @@ func (cm *CredentialMenu) EditCredential() error {
 				}
 				keyContent.WriteString(line + "\n")
 			}
-			
+
 			if keyContent.Len() == 0 {
 				return fmt.Errorf("密钥内容不能为空")
 			}
@@ -515,4 +520,4 @@ func min(a, b int) int {
 		return a
 	}
 	return b
-} 
+}

@@ -1,0 +1,15 @@
+# Maintainer: Your Name <your.email@example.com>
+pkgname=gotssh
+pkgver=1.1.0
+pkgrel=1
+pkgdesc="功能强大的SSH连接和端口转发管理工具"
+arch=('x86_64')
+url="https://github.com/MinatoHikari/gotssh"
+license=('MIT')
+depends=('glibc')
+source=("https://github.com/MinatoHikari/gotssh/releases/download/v1.1.0/gotssh-1.1.0-linux-amd64.tar.gz")
+sha256sums=('6e21c08d05437fb88feb11b9be17277d5d2be4abf811d5ed84995de114e5be97')
+
+package() {
+    install -Dm755 "$srcdir/gotssh-linux-amd64" "$pkgdir/usr/bin/gotssh"
+}

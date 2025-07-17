@@ -33,14 +33,14 @@ func NewClient(cfg *config.ServerConfig, configManager *config.Manager) *Client 
 		config:        cfg,
 		configManager: configManager,
 	}
-	
+
 	// 如果服务器配置引用了凭证，尝试加载凭证
 	if cfg.CredentialID != "" && configManager != nil {
 		if cred, err := configManager.GetCredential(cfg.CredentialID); err == nil {
 			client.credential = cred
 		}
 	}
-	
+
 	return client
 }
 
@@ -154,7 +154,7 @@ func (c *Client) buildSSHConfig() (*ssh.ClientConfig, error) {
 			if agentAuth, err := c.getAgentAuth(); err == nil {
 				authMethods = append(authMethods, agentAuth)
 			}
-			
+
 			if keyAuth, err := c.getDefaultKeyAuth(); err == nil {
 				authMethods = append(authMethods, keyAuth)
 			}
@@ -184,7 +184,7 @@ func (c *Client) buildSSHConfig() (*ssh.ClientConfig, error) {
 func (c *Client) getKeyAuth() (ssh.AuthMethod, error) {
 	keyPath := c.config.KeyPath
 	keyPassphrase := c.config.KeyPassphrase
-	
+
 	// 如果有凭证且为密钥类型，优先使用凭证中的密钥
 	if c.credential != nil && c.credential.Type == config.CredentialTypeKey {
 		if c.credential.KeyPath != "" {
@@ -194,11 +194,11 @@ func (c *Client) getKeyAuth() (ssh.AuthMethod, error) {
 			keyPassphrase = c.credential.KeyPassphrase
 		}
 	}
-	
+
 	if keyPath == "" {
 		return nil, fmt.Errorf("密钥认证需要提供密钥文件路径")
 	}
-	
+
 	keyData, err := os.ReadFile(keyPath)
 	if err != nil {
 		return nil, fmt.Errorf("读取密钥文件失败: %w", err)
@@ -304,9 +304,10 @@ func (c *Client) getInteractiveAuth() ([]ssh.AuthMethod, error) {
 	fmt.Println("1. 密码认证")
 	fmt.Println("2. 密钥认证")
 	fmt.Println("3. SSH代理认证")
+	fmt.Println("4. 凭证认证")
 
 	var choice int
-	fmt.Print("请输入选择 (1-3): ")
+	fmt.Print("请输入选择 (1-4): ")
 	if _, err := fmt.Scanf("%d", &choice); err != nil {
 		return nil, fmt.Errorf("读取选择失败: %w", err)
 	}
@@ -357,6 +358,35 @@ func (c *Client) getInteractiveAuth() ([]ssh.AuthMethod, error) {
 			return nil, fmt.Errorf("SSH代理认证失败: %w", err)
 		}
 		authMethods = append(authMethods, agentAuth)
+
+	case 4:
+		// 使用凭证认证
+		fmt.Print("请输入凭证别名: ")
+		var alias string
+		if _, err := fmt.Scanf("%s", &alias); err != nil {
+			return nil, fmt.Errorf("读取凭证别名失败: %w", err)
+		}
+
+		cred, err := c.configManager.GetCredentialByAlias(alias)
+		if err != nil {
+			return nil, fmt.Errorf("获取凭证失败: %w", err)
+		}
+
+		c.credential = cred
+
+		switch c.credential.Type {
+		case config.CredentialTypePassword:
+			if c.credential.Password == "" {
+				return nil, fmt.Errorf("凭证中的密码为空")
+			}
+			authMethods = append(authMethods, ssh.Password(c.credential.Password))
+		case config.CredentialTypeKey:
+			keyAuth, err := c.getCredentialKeyAuth()
+			if err != nil {
+				return nil, fmt.Errorf("获取凭证密钥认证失败: %w", err)
+			}
+			authMethods = append(authMethods, keyAuth)
+		}
 
 	default:
 		return nil, fmt.Errorf("无效的选择")
@@ -582,7 +612,7 @@ func (c *Client) SendKeepAlive() error {
 		// 如果不支持这个请求，尝试发送标准的Keep-alive
 		_, _, err = c.conn.SendRequest("keepalive", false, nil)
 	}
-	
+
 	return err
 }
 
@@ -714,4 +744,4 @@ func (c *Client) RemotePortForwardWithTimeout(remoteAddr, localAddr string, time
 			io.Copy(localConn, remoteConn)
 		}()
 	}
-} 
+}

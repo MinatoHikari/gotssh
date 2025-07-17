@@ -26,8 +26,6 @@ func NewMenu(configManager *config.Manager, forwardManager *forward.Manager) *Me
 	}
 }
 
-
-
 // ShowServerMenu 显示服务器管理菜单
 func (m *Menu) ShowServerMenu() error {
 	for {
@@ -354,6 +352,11 @@ func (m *Menu) configureProxy() (*config.ProxyConfig, error) {
 
 // ShowServerList 显示服务器列表
 func (m *Menu) ShowServerList() {
+	if m.configManager == nil {
+		fmt.Println("配置管理器未初始化")
+		return
+	}
+
 	servers := m.configManager.ListServers()
 	if len(servers) == 0 {
 		fmt.Println("暂无服务器配置")
@@ -510,8 +513,8 @@ func (m *Menu) EditServer() error {
 	}
 
 	authPrompt := promptui.Select{
-		Label: "认证类型",
-		Items: authTypes,
+		Label:     "认证类型",
+		Items:     authTypes,
 		CursorPos: currentAuthIndex,
 	}
 	_, authResult, err := authPrompt.Run()
@@ -712,7 +715,7 @@ func (m *Menu) ConnectServer() error {
 
 	// 创建SSH客户端
 	client := ssh.NewClient(server, m.configManager)
-	
+
 	// 连接到服务器
 	if err := client.Connect(); err != nil {
 		return fmt.Errorf("连接失败: %w", err)
@@ -720,7 +723,7 @@ func (m *Menu) ConnectServer() error {
 	defer client.Close()
 
 	fmt.Println("✅ 连接成功！正在启动Shell...")
-	
+
 	// 启动交互式Shell
 	if err := client.Shell(); err != nil {
 		return fmt.Errorf("Shell启动失败: %w", err)
@@ -966,13 +969,18 @@ func (m *Menu) AddPortForward() error {
 		return fmt.Errorf("保存端口转发配置失败: %w", err)
 	}
 
-	fmt.Printf("端口转发配置已添加: %s:%d -> %s:%d\n", 
+	fmt.Printf("端口转发配置已添加: %s:%d -> %s:%d\n",
 		pf.LocalHost, pf.LocalPort, pf.RemoteHost, pf.RemotePort)
 	return nil
 }
 
 // ShowPortForwardList 显示端口转发列表
 func (m *Menu) ShowPortForwardList() {
+	if m.configManager == nil {
+		fmt.Println("配置管理器未初始化")
+		return
+	}
+
 	pfs := m.configManager.ListPortForwards()
 	if len(pfs) == 0 {
 		fmt.Println("暂无端口转发配置")
@@ -985,14 +993,14 @@ func (m *Menu) ShowPortForwardList() {
 		if pf.Alias != "" {
 			fmt.Printf("[%s] ", pf.Alias)
 		}
-		fmt.Printf("%s:%d -> %s:%d", 
+		fmt.Printf("%s:%d -> %s:%d",
 			pf.LocalHost, pf.LocalPort, pf.RemoteHost, pf.RemotePort)
 		fmt.Printf(" (%s)", pf.Type)
-		
+
 		// 显示状态
 		status := m.forwardManager.GetForwardStatus(pf.ID)
 		fmt.Printf(" [状态: %s]", status)
-		
+
 		if pf.Description != "" {
 			fmt.Printf(" - %s", pf.Description)
 		}
@@ -1026,7 +1034,7 @@ func (m *Menu) StartPortForward() error {
 	// 选择要启动的端口转发
 	var items []string
 	for _, pf := range availablePFs {
-		item := fmt.Sprintf("%s:%d -> %s:%d (%s)", 
+		item := fmt.Sprintf("%s:%d -> %s:%d (%s)",
 			pf.LocalHost, pf.LocalPort, pf.RemoteHost, pf.RemotePort, pf.Type)
 		if pf.Alias != "" {
 			item = fmt.Sprintf("[%s] %s", pf.Alias, item)
@@ -1046,7 +1054,7 @@ func (m *Menu) StartPortForward() error {
 
 	pf := availablePFs[index]
 
-	fmt.Printf("正在启动端口转发: %s:%d -> %s:%d ...\n", 
+	fmt.Printf("正在启动端口转发: %s:%d -> %s:%d ...\n",
 		pf.LocalHost, pf.LocalPort, pf.RemoteHost, pf.RemotePort)
 
 	// 启动端口转发
@@ -1072,7 +1080,7 @@ func (m *Menu) StopPortForward() error {
 	var items []string
 	for _, forward := range activeForwards {
 		pf := forward.Config
-		item := fmt.Sprintf("%s:%d -> %s:%d (%s)", 
+		item := fmt.Sprintf("%s:%d -> %s:%d (%s)",
 			pf.LocalHost, pf.LocalPort, pf.RemoteHost, pf.RemotePort, pf.Type)
 		if pf.Alias != "" {
 			item = fmt.Sprintf("[%s] %s", pf.Alias, item)
@@ -1092,8 +1100,8 @@ func (m *Menu) StopPortForward() error {
 
 	forward := activeForwards[index]
 
-	fmt.Printf("正在停止端口转发: %s:%d -> %s:%d ...\n", 
-		forward.Config.LocalHost, forward.Config.LocalPort, 
+	fmt.Printf("正在停止端口转发: %s:%d -> %s:%d ...\n",
+		forward.Config.LocalHost, forward.Config.LocalPort,
 		forward.Config.RemoteHost, forward.Config.RemotePort)
 
 	// 停止端口转发
@@ -1116,7 +1124,7 @@ func (m *Menu) DeletePortForward() error {
 	// 选择要删除的端口转发
 	var items []string
 	for _, pf := range pfs {
-		item := fmt.Sprintf("%s:%d -> %s:%d (%s)", 
+		item := fmt.Sprintf("%s:%d -> %s:%d (%s)",
 			pf.LocalHost, pf.LocalPort, pf.RemoteHost, pf.RemotePort, pf.Type)
 		if pf.Alias != "" {
 			item = fmt.Sprintf("[%s] %s", pf.Alias, item)
@@ -1138,7 +1146,7 @@ func (m *Menu) DeletePortForward() error {
 
 	// 确认删除
 	confirmPrompt := promptui.Select{
-		Label: fmt.Sprintf("确定要删除端口转发 %s:%d -> %s:%d 吗？", 
+		Label: fmt.Sprintf("确定要删除端口转发 %s:%d -> %s:%d 吗？",
 			pf.LocalHost, pf.LocalPort, pf.RemoteHost, pf.RemotePort),
 		Items: []string{"是", "否"},
 	}
@@ -1159,7 +1167,7 @@ func (m *Menu) DeletePortForward() error {
 		if err := m.configManager.DeletePortForward(pf.ID); err != nil {
 			return fmt.Errorf("删除端口转发失败: %w", err)
 		}
-		fmt.Printf("端口转发 %s:%d -> %s:%d 已删除\n", 
+		fmt.Printf("端口转发 %s:%d -> %s:%d 已删除\n",
 			pf.LocalHost, pf.LocalPort, pf.RemoteHost, pf.RemotePort)
 	}
 
@@ -1177,7 +1185,7 @@ func (m *Menu) TestPortForward() error {
 	// 选择要测试的端口转发
 	var items []string
 	for _, pf := range pfs {
-		item := fmt.Sprintf("%s:%d -> %s:%d (%s)", 
+		item := fmt.Sprintf("%s:%d -> %s:%d (%s)",
 			pf.LocalHost, pf.LocalPort, pf.RemoteHost, pf.RemotePort, pf.Type)
 		if pf.Alias != "" {
 			item = fmt.Sprintf("[%s] %s", pf.Alias, item)
@@ -1197,7 +1205,7 @@ func (m *Menu) TestPortForward() error {
 
 	pf := pfs[index]
 
-	fmt.Printf("正在测试端口转发配置: %s:%d -> %s:%d ...\n", 
+	fmt.Printf("正在测试端口转发配置: %s:%d -> %s:%d ...\n",
 		pf.LocalHost, pf.LocalPort, pf.RemoteHost, pf.RemotePort)
 
 	// 测试端口转发配置
@@ -1208,4 +1216,4 @@ func (m *Menu) TestPortForward() error {
 
 	fmt.Printf("✅ 端口转发配置测试成功！\n")
 	return nil
-} 
+}
